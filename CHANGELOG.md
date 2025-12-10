@@ -1,0 +1,38 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2024-12-10
+
+### Added
+
+- Initial release of terraform-datadog-ecs-monitor module
+- ECS Service monitors:
+  - `service_cpu_high` - High CPU utilization alert (P2)
+  - `service_cpu_critical` - Critical CPU utilization alert (P1)
+  - `service_memory_high` - High memory utilization alert (P2)
+  - `service_memory_critical` - Critical memory utilization alert (P1)
+  - `service_running_tasks_low` - Running tasks below desired count (P1)
+  - `service_task_count_zero` - Service down alert (P1)
+  - `service_pending_tasks_stuck` - Tasks stuck in pending state (P2)
+- ECS Task monitors:
+  - `task_cpu_high` - Task CPU utilization alert (P3)
+  - `task_memory_high` - Task memory utilization alert (P3)
+- ECS Cluster monitors (EC2 launch type only):
+  - `cluster_cpu_reservation_high` - High CPU reservation (P2)
+  - `cluster_memory_reservation_high` - High memory reservation (P2)
+  - `cluster_cpu_utilization_high` - High cluster CPU utilization (P2)
+  - `cluster_memory_utilization_high` - High cluster memory utilization (P2)
+- APM monitors:
+  - `apm_p95_latency` - P95 latency alert (P3)
+  - `apm_p99_latency` - P99 latency alert (P2)
+  - `apm_error_rate` - Error rate alert (P2)
+  - `apm_error_count` - Error count spike alert (P2)
+  - `apm_throughput_drop` - Request throughput drop detection (P3)
+- Configurable thresholds for CPU, memory, latency, and error metrics
+- Support for monitoring all services in a cluster using wildcard
+- Override capability for individual monitor configurations
+- Slack notification integration with configurable channel prefix
