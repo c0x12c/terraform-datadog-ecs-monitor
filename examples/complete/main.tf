@@ -10,7 +10,7 @@ module "ecs_monitors_fargate" {
   notification_slack_channel_prefix = "alerts-"
   tag_slack_channel                 = true
 
-  enabled_monitors = ["service", "task", "apm"]
+  enabled_monitors = ["service", "apm"]
 
   # APM configuration
   apm_service_name = "my-api-service"
@@ -37,7 +37,7 @@ module "ecs_monitors_ec2" {
   notification_slack_channel_prefix = "alerts-"
   tag_slack_channel                 = true
 
-  enabled_monitors = ["service", "task", "cluster"]
+  enabled_monitors = ["service", "cluster"]
 
   # Override specific monitors
   override_default_monitors = {
