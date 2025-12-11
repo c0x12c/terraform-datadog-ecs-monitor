@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2024-12-10
+## [1.0.0] - 2024-12-12
 
 ### Added
 
@@ -18,9 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `service_running_tasks_low` - Running tasks below desired count (P1)
   - `service_task_count_zero` - Service down alert (P1)
   - `service_pending_tasks_stuck` - Tasks stuck in pending state (P2)
-- ECS Task monitors:
-  - `task_cpu_high` - Task CPU utilization alert (P3)
-  - `task_memory_high` - Task memory utilization alert (P3)
 - ECS Cluster monitors (EC2 launch type only):
   - `cluster_cpu_reservation_high` - High CPU reservation (P2)
   - `cluster_memory_reservation_high` - High memory reservation (P2)

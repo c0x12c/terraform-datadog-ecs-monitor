@@ -1,6 +1,11 @@
 variable "aws_account_id" {
   description = "AWS account ID for metric filtering"
   type        = string
+
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
+    error_message = "AWS account ID must be a 12-digit number"
+  }
 }
 
 variable "environment" {
@@ -30,25 +35,14 @@ variable "tag_slack_channel" {
   default     = true
 }
 
-variable "launch_type" {
-  description = "ECS launch type: EC2 or FARGATE. Cluster monitors are only enabled for EC2 launch type"
-  type        = string
-  default     = "FARGATE"
-
-  validation {
-    condition     = contains(["EC2", "FARGATE"], var.launch_type)
-    error_message = "Launch type must be EC2 or FARGATE"
-  }
-}
-
 variable "enabled_monitors" {
-  description = "List of monitor categories to enable: service, task, cluster, apm"
+  description = "List of monitor categories to enable: service, apm"
   type        = list(string)
-  default     = ["service", "task", "apm"]
+  default     = ["service", "apm"]
 
   validation {
-    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "task", "cluster", "apm"], m)])
-    error_message = "Valid monitor categories: service, task, cluster, apm"
+    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "apm"], m)])
+    error_message = "Valid monitor categories: service, apm"
   }
 }
 
@@ -58,10 +52,7 @@ variable "override_default_monitors" {
   default     = {}
 }
 
-#==============================================================================
 # APM Configuration
-#==============================================================================
-
 variable "apm_service_name" {
   description = "APM service name for trace metrics. Defaults to ecs_service_name if not specified"
   type        = string
@@ -74,32 +65,82 @@ variable "apm_http_metric" {
   default     = "trace.http.request"
 }
 
-#==============================================================================
 # Threshold Configuration
-#==============================================================================
+variable "recovery_threshold_ratio" {
+  description = "Ratio for calculating recovery thresholds from critical thresholds (0.0-1.0). E.g., 0.8 means recovery at 80% of critical threshold"
+  type        = number
+  default     = 0.8
+
+  validation {
+    condition     = var.recovery_threshold_ratio > 0 && var.recovery_threshold_ratio < 1
+    error_message = "Recovery threshold ratio must be between 0 and 1 (exclusive)"
+  }
+}
 
 variable "cpu_critical_threshold" {
-  description = "CPU utilization critical threshold percentage"
+  description = "CPU utilization critical threshold percentage for high alerts"
   type        = number
   default     = 80
+
+  validation {
+    condition     = var.cpu_critical_threshold > 0 && var.cpu_critical_threshold <= 100
+    error_message = "CPU critical threshold must be between 0 and 100"
+  }
 }
 
 variable "cpu_warning_threshold" {
   description = "CPU utilization warning threshold percentage"
   type        = number
   default     = 70
+
+  validation {
+    condition     = var.cpu_warning_threshold > 0 && var.cpu_warning_threshold <= 100
+    error_message = "CPU warning threshold must be between 0 and 100"
+  }
+}
+
+variable "cpu_critical_max_threshold" {
+  description = "Maximum CPU threshold percentage for critical alerts (service_cpu_critical monitor)"
+  type        = number
+  default     = 95
+
+  validation {
+    condition     = var.cpu_critical_max_threshold > 0 && var.cpu_critical_max_threshold <= 100
+    error_message = "CPU critical max threshold must be between 0 and 100"
+  }
 }
 
 variable "memory_critical_threshold" {
-  description = "Memory utilization critical threshold percentage"
+  description = "Memory utilization critical threshold percentage for high alerts"
   type        = number
   default     = 80
+
+  validation {
+    condition     = var.memory_critical_threshold > 0 && var.memory_critical_threshold <= 100
+    error_message = "Memory critical threshold must be between 0 and 100"
+  }
 }
 
 variable "memory_warning_threshold" {
   description = "Memory utilization warning threshold percentage"
   type        = number
   default     = 70
+
+  validation {
+    condition     = var.memory_warning_threshold > 0 && var.memory_warning_threshold <= 100
+    error_message = "Memory warning threshold must be between 0 and 100"
+  }
+}
+
+variable "memory_critical_max_threshold" {
+  description = "Maximum memory threshold percentage for critical alerts (service_memory_critical monitor)"
+  type        = number
+  default     = 95
+
+  validation {
+    condition     = var.memory_critical_max_threshold > 0 && var.memory_critical_max_threshold <= 100
+    error_message = "Memory critical max threshold must be between 0 and 100"
+  }
 }
 
 variable "p95_latency_threshold" {
@@ -126,10 +167,7 @@ variable "error_count_threshold" {
   default     = 10
 }
 
-#==============================================================================
 # Renotification Configuration
-#==============================================================================
-
 variable "renotify_interval_critical" {
   description = "Renotification interval in minutes for critical (P1) monitors"
   type        = number

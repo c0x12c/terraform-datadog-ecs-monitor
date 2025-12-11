@@ -3,16 +3,6 @@ output "service_monitor_names" {
   value       = keys(module.service_monitors)
 }
 
-output "task_monitor_names" {
-  description = "List of created task monitor names"
-  value       = keys(module.task_monitors)
-}
-
-output "cluster_monitor_names" {
-  description = "List of created cluster monitor names"
-  value       = keys(module.cluster_monitors)
-}
-
 output "apm_monitor_names" {
   description = "List of created APM monitor names"
   value       = keys(module.apm_monitors)
