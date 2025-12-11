@@ -35,25 +35,14 @@ variable "tag_slack_channel" {
   default     = true
 }
 
-variable "launch_type" {
-  description = "ECS launch type: EC2 or FARGATE. Cluster monitors are only enabled for EC2 launch type"
-  type        = string
-  default     = "FARGATE"
-
-  validation {
-    condition     = contains(["EC2", "FARGATE"], var.launch_type)
-    error_message = "Launch type must be EC2 or FARGATE"
-  }
-}
-
 variable "enabled_monitors" {
-  description = "List of monitor categories to enable: service, cluster, apm"
+  description = "List of monitor categories to enable: service, apm"
   type        = list(string)
   default     = ["service", "apm"]
 
   validation {
-    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "cluster", "apm"], m)])
-    error_message = "Valid monitor categories: service, cluster, apm"
+    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "apm"], m)])
+    error_message = "Valid monitor categories: service, apm"
   }
 }
 
