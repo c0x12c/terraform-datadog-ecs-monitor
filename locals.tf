@@ -87,7 +87,7 @@ locals {
       title_tags     = "[Low Running Tasks] [ECS Service]"
       title          = "ECS Service has fewer running tasks than desired"
 
-      query_template = "avg($${timeframe}):avg:aws.ecs.service.running{${local.ecs_filter}${local.service_filter}} by {servicename} < avg:aws.ecs.service.desired{${local.ecs_filter}${local.service_filter}} by {servicename}"
+      query_template = "avg($${timeframe}):avg:aws.ecs.service.running{${local.ecs_filter}${local.service_filter}} by {servicename} - avg:aws.ecs.service.desired{${local.ecs_filter}${local.service_filter}} by {servicename} < $${threshold_critical}"
       query_args = {
         timeframe = "last_5m"
       }
@@ -127,10 +127,9 @@ locals {
         timeframe = "last_10m"
       }
 
-      threshold_critical          = 0
-      threshold_critical_recovery = 0
-      renotify_interval           = var.renotify_interval_high
-      renotify_occurrences        = 3
+      threshold_critical = 1
+      renotify_interval  = var.renotify_interval_high
+      renotify_occurrences = 3
     }
   }
 
@@ -333,11 +332,10 @@ locals {
       title_tags     = "[Throughput Drop] [APM]"
       title          = "Service ${local.apm_service} request throughput dropped significantly"
 
-      query_template = "pct_change($${timeframe},$${compare_window}):sum:$${metric}.hits{env:${var.environment},service:${local.apm_service}}.as_count() < $${threshold_critical}"
+      query_template = "change(avg($${timeframe}),last_1h):sum:$${metric}.hits{env:${var.environment},service:${local.apm_service}}.as_count() < $${threshold_critical}"
       query_args = {
-        timeframe      = "last_5m"
-        compare_window = "last_1h"
-        metric         = var.apm_http_metric
+        timeframe = "last_5m"
+        metric    = var.apm_http_metric
       }
 
       threshold_critical          = -50
