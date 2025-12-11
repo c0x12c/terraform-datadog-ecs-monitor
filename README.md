@@ -5,7 +5,6 @@ Terraform module for creating comprehensive Datadog monitors for AWS ECS service
 ## Features
 
 - **ECS Service Monitors**: CPU, memory utilization, running task count, pending tasks
-- **ECS Task Monitors**: Task-level CPU and memory utilization
 - **ECS Cluster Monitors**: CPU/memory reservation and utilization (EC2 launch type only)
 - **APM Monitors**: P95/P99 latency, error rate, error count, throughput drop detection
 
@@ -26,7 +25,7 @@ module "ecs_monitors" {
   notification_slack_channel_prefix = "alerts-"
   tag_slack_channel                 = true
 
-  enabled_monitors = ["service", "task", "apm"]
+  enabled_monitors = ["service", "apm"]
 
   apm_service_name = "my-service"
 }
@@ -47,7 +46,7 @@ module "ecs_monitors" {
 
   notification_slack_channel_prefix = "alerts-"
 
-  enabled_monitors = ["service", "task", "cluster", "apm"]
+  enabled_monitors = ["service", "cluster", "apm"]
 }
 ```
 
@@ -65,7 +64,7 @@ module "ecs_monitors" {
 
   notification_slack_channel_prefix = "alerts-"
 
-  enabled_monitors = ["service", "task"]
+  enabled_monitors = ["service"]
 }
 ```
 
@@ -133,13 +132,6 @@ module "ecs_monitors" {
 | `service_task_count_zero` | No running tasks (service down) | P1 | = 0 |
 | `service_pending_tasks_stuck` | Tasks stuck in pending state | P2 | > 0 for 10min |
 
-### Task Monitors
-
-| Monitor | Description | Priority | Default Threshold |
-|---------|-------------|----------|-------------------|
-| `task_cpu_high` | Task CPU utilization is high | P3 | 80% critical |
-| `task_memory_high` | Task memory utilization is high | P3 | 80% critical |
-
 ### Cluster Monitors (EC2 Launch Type Only)
 
 | Monitor | Description | Priority | Default Threshold |
@@ -186,7 +178,6 @@ No providers.
 | <a name="module_apm_monitors"></a> [apm\_monitors](#module\_apm\_monitors) | c0x12c/monitors/datadog | ~> 1.0.0 |
 | <a name="module_cluster_monitors"></a> [cluster\_monitors](#module\_cluster\_monitors) | c0x12c/monitors/datadog | ~> 1.0.0 |
 | <a name="module_service_monitors"></a> [service\_monitors](#module\_service\_monitors) | c0x12c/monitors/datadog | ~> 1.0.0 |
-| <a name="module_task_monitors"></a> [task\_monitors](#module\_task\_monitors) | c0x12c/monitors/datadog | ~> 1.0.0 |
 
 ## Resources
 
@@ -203,7 +194,7 @@ No resources.
 | <a name="input_cpu_warning_threshold"></a> [cpu\_warning\_threshold](#input\_cpu\_warning\_threshold) | CPU utilization warning threshold percentage | `number` | `70` | no |
 | <a name="input_ecs_cluster_name"></a> [ecs\_cluster\_name](#input\_ecs\_cluster\_name) | ECS cluster name for filtering metrics | `string` | n/a | yes |
 | <a name="input_ecs_service_name"></a> [ecs\_service\_name](#input\_ecs\_service\_name) | ECS service name for filtering metrics. Use '\*' to monitor all services in the cluster | `string` | `"*"` | no |
-| <a name="input_enabled_monitors"></a> [enabled\_monitors](#input\_enabled\_monitors) | List of monitor categories to enable: service, task, cluster, apm | `list(string)` | `["service", "task", "apm"]` | no |
+| <a name="input_enabled_monitors"></a> [enabled\_monitors](#input\_enabled\_monitors) | List of monitor categories to enable: service, cluster, apm | `list(string)` | `["service", "apm"]` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name (e.g., dev, staging, prod) | `string` | n/a | yes |
 | <a name="input_error_count_threshold"></a> [error\_count\_threshold](#input\_error\_count\_threshold) | Error count critical threshold (absolute number) | `number` | `10` | no |
 | <a name="input_error_rate_threshold"></a> [error\_rate\_threshold](#input\_error\_rate\_threshold) | Error rate critical threshold percentage | `number` | `1` | no |
@@ -229,5 +220,4 @@ No resources.
 | <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | ECS service name being monitored |
 | <a name="output_enabled_monitors"></a> [enabled\_monitors](#output\_enabled\_monitors) | List of enabled monitor categories |
 | <a name="output_service_monitor_names"></a> [service\_monitor\_names](#output\_service\_monitor\_names) | List of created service monitor names |
-| <a name="output_task_monitor_names"></a> [task\_monitor\_names](#output\_task\_monitor\_names) | List of created task monitor names |
 <!-- END_TF_DOCS -->

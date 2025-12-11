@@ -42,13 +42,13 @@ variable "launch_type" {
 }
 
 variable "enabled_monitors" {
-  description = "List of monitor categories to enable: service, task, cluster, apm"
+  description = "List of monitor categories to enable: service, cluster, apm"
   type        = list(string)
-  default     = ["service", "task", "apm"]
+  default     = ["service", "apm"]
 
   validation {
-    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "task", "cluster", "apm"], m)])
-    error_message = "Valid monitor categories: service, task, cluster, apm"
+    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "cluster", "apm"], m)])
+    error_message = "Valid monitor categories: service, cluster, apm"
   }
 }
 

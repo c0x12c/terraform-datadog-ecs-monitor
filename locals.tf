@@ -137,45 +137,6 @@ locals {
   }
 
   #==============================================================================
-  # ECS Task Monitors
-  #==============================================================================
-  default_task_monitors = {
-    task_cpu_high = {
-      enabled        = true
-      priority_level = 3
-      title_tags     = "[High CPU] [ECS Task]"
-      title          = "ECS Task CPU utilization is high"
-
-      query_template = "avg($${timeframe}):avg:aws.ecs.task.cpuutilization{${local.ecs_filter}} by {task_family} > $${threshold_critical}"
-      query_args = {
-        timeframe = "last_5m"
-      }
-
-      threshold_critical          = var.cpu_critical_threshold
-      threshold_critical_recovery = var.cpu_critical_threshold - 15
-      renotify_interval           = var.renotify_interval_medium
-      renotify_occurrences        = 2
-    }
-
-    task_memory_high = {
-      enabled        = true
-      priority_level = 3
-      title_tags     = "[High Memory] [ECS Task]"
-      title          = "ECS Task memory utilization is high"
-
-      query_template = "avg($${timeframe}):avg:aws.ecs.task.memoryutilization{${local.ecs_filter}} by {task_family} > $${threshold_critical}"
-      query_args = {
-        timeframe = "last_5m"
-      }
-
-      threshold_critical          = var.memory_critical_threshold
-      threshold_critical_recovery = var.memory_critical_threshold - 15
-      renotify_interval           = var.renotify_interval_medium
-      renotify_occurrences        = 2
-    }
-  }
-
-  #==============================================================================
   # ECS Cluster Monitors (EC2 Launch Type only)
   #==============================================================================
   default_cluster_monitors = {
