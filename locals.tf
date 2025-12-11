@@ -1,19 +1,11 @@
 locals {
-  apm_service   = coalesce(var.apm_service_name, var.ecs_service_name)
-  p99_threshold = coalesce(var.p99_latency_threshold, var.p95_latency_threshold * 3)
-
-  # Display name for monitor titles
+  apm_service          = coalesce(var.apm_service_name, var.ecs_service_name)
+  p99_threshold        = coalesce(var.p99_latency_threshold, var.p95_latency_threshold * 3)
   service_display_name = var.ecs_service_name != "*" ? var.ecs_service_name : "All Services"
+  ecs_filter           = "aws_account:${var.aws_account_id},environment:${var.environment},clustername:${var.ecs_cluster_name}"
+  service_filter       = var.ecs_service_name != "*" ? ",servicename:${var.ecs_service_name}" : ""
+  recovery_ratio       = var.recovery_threshold_ratio
 
-  ecs_filter     = "aws_account:${var.aws_account_id},environment:${var.environment},clustername:${var.ecs_cluster_name}"
-  service_filter = var.ecs_service_name != "*" ? ",servicename:${var.ecs_service_name}" : ""
-
-  # Standardized recovery threshold calculations
-  recovery_ratio = var.recovery_threshold_ratio
-
-  #==============================================================================
-  # ECS Service Monitors
-  #==============================================================================
   default_service_monitors = {
     service_cpu_high = {
       enabled        = true
@@ -139,9 +131,6 @@ locals {
     }
   }
 
-  #==============================================================================
-  # ECS Cluster Monitors (EC2 Launch Type only)
-  #==============================================================================
   default_cluster_monitors = {
     cluster_cpu_reservation_high = {
       enabled        = var.launch_type == "EC2"
@@ -216,9 +205,6 @@ locals {
     }
   }
 
-  #==============================================================================
-  # APM/Trace Monitors
-  #==============================================================================
   default_apm_monitors = {
     apm_p95_latency = {
       enabled        = true
