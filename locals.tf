@@ -92,7 +92,7 @@ locals {
         timeframe = "last_5m"
       }
 
-      threshold_critical          = 0
+      threshold_critical          = -1
       threshold_critical_recovery = 0
       renotify_interval           = var.renotify_interval_critical
       renotify_occurrences        = 5
@@ -332,7 +332,7 @@ locals {
       title_tags     = "[Throughput Drop] [APM]"
       title          = "Service ${local.apm_service} request throughput dropped significantly"
 
-      query_template = "change(avg($${timeframe}),last_1h):sum:$${metric}.hits{env:${var.environment},service:${local.apm_service}}.as_count() < $${threshold_critical}"
+      query_template = "change(sum($${timeframe}),last_1h):sum:$${metric}.hits{env:${var.environment},service:${local.apm_service}}.as_count() < $${threshold_critical}"
       query_args = {
         timeframe = "last_5m"
         metric    = var.apm_http_metric
