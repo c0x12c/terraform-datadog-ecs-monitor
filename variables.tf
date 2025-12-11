@@ -52,6 +52,7 @@ variable "override_default_monitors" {
   default     = {}
 }
 
+# APM Configuration
 variable "apm_service_name" {
   description = "APM service name for trace metrics. Defaults to ecs_service_name if not specified"
   type        = string
@@ -64,6 +65,7 @@ variable "apm_http_metric" {
   default     = "trace.http.request"
 }
 
+# Threshold Configuration
 variable "recovery_threshold_ratio" {
   description = "Ratio for calculating recovery thresholds from critical thresholds (0.0-1.0). E.g., 0.8 means recovery at 80% of critical threshold"
   type        = number
@@ -165,6 +167,7 @@ variable "error_count_threshold" {
   default     = 10
 }
 
+# Renotification Configuration
 variable "renotify_interval_critical" {
   description = "Renotification interval in minutes for critical (P1) monitors"
   type        = number

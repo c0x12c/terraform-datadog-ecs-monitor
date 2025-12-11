@@ -6,6 +6,7 @@ locals {
   service_filter       = var.ecs_service_name != "*" ? ",servicename:${var.ecs_service_name}" : ""
   recovery_ratio       = var.recovery_threshold_ratio
 
+  # ECS Service Monitors
   default_service_monitors = {
     service_cpu_high = {
       enabled        = true
@@ -131,6 +132,7 @@ locals {
     }
   }
 
+  # APM Monitors
   default_apm_monitors = {
     apm_p95_latency = {
       enabled        = true
