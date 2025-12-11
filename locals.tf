@@ -2,6 +2,9 @@ locals {
   apm_service   = coalesce(var.apm_service_name, var.ecs_service_name)
   p99_threshold = coalesce(var.p99_latency_threshold, var.p95_latency_threshold * 3)
 
+  # Display name for monitor titles
+  service_display_name = var.ecs_service_name != "*" ? var.ecs_service_name : "All Services"
+
   ecs_filter     = "aws_account:${var.aws_account_id},environment:${var.environment},clustername:${var.ecs_cluster_name}"
   service_filter = var.ecs_service_name != "*" ? ",servicename:${var.ecs_service_name}" : ""
 
@@ -12,8 +15,8 @@ locals {
     service_cpu_high = {
       enabled        = true
       priority_level = 2
-      title_tags     = "[High CPU] [ECS Service]"
-      title          = "ECS Service CPU utilization is high"
+      title_tags     = "[High CPU] [ECS Service] [${local.service_display_name}]"
+      title          = "CPU utilization is high"
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.cpuutilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -31,8 +34,8 @@ locals {
     service_cpu_critical = {
       enabled        = true
       priority_level = 1
-      title_tags     = "[Critical CPU] [ECS Service]"
-      title          = "ECS Service CPU utilization is critical"
+      title_tags     = "[Critical CPU] [ECS Service] [${local.service_display_name}]"
+      title          = "CPU utilization is critical"
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.cpuutilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -48,8 +51,8 @@ locals {
     service_memory_high = {
       enabled        = true
       priority_level = 2
-      title_tags     = "[High Memory] [ECS Service]"
-      title          = "ECS Service memory utilization is high"
+      title_tags     = "[High Memory] [ECS Service] [${local.service_display_name}]"
+      title          = "Memory utilization is high"
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.memory_utilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -67,8 +70,8 @@ locals {
     service_memory_critical = {
       enabled        = true
       priority_level = 1
-      title_tags     = "[Critical Memory] [ECS Service]"
-      title          = "ECS Service memory utilization is critical - OOM risk"
+      title_tags     = "[Critical Memory] [ECS Service] [${local.service_display_name}]"
+      title          = "Memory utilization is critical - OOM risk"
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.memory_utilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -84,8 +87,8 @@ locals {
     service_running_tasks_low = {
       enabled        = true
       priority_level = 1
-      title_tags     = "[Low Running Tasks] [ECS Service]"
-      title          = "ECS Service has fewer running tasks than desired"
+      title_tags     = "[Low Running Tasks] [ECS Service] [${local.service_display_name}]"
+      title          = "Fewer running tasks than desired"
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.running{${local.ecs_filter}${local.service_filter}} by {servicename} - avg:aws.ecs.service.desired{${local.ecs_filter}${local.service_filter}} by {servicename} < $${threshold_critical}"
       query_args = {
@@ -102,7 +105,7 @@ locals {
     service_task_count_zero = {
       enabled        = true
       priority_level = 1
-      title_tags     = "[Service Down] [ECS Service]"
+      title_tags     = "[Service Down] [ECS Service] [${local.service_display_name}]"
       title          = "ECS Service has no running tasks"
 
       query_template = "max($${timeframe}):sum:aws.ecs.service.running{${local.ecs_filter}${local.service_filter}} by {servicename} <= $${threshold_critical}"
@@ -119,7 +122,7 @@ locals {
     service_pending_tasks_stuck = {
       enabled        = true
       priority_level = 2
-      title_tags     = "[Pending Tasks] [ECS Service]"
+      title_tags     = "[Pending Tasks] [ECS Service] [${local.service_display_name}]"
       title          = "ECS Service has tasks stuck in pending state"
 
       query_template = "min($${timeframe}):sum:aws.ecs.service.pending{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
@@ -127,8 +130,8 @@ locals {
         timeframe = "last_10m"
       }
 
-      threshold_critical = 1
-      renotify_interval  = var.renotify_interval_high
+      threshold_critical   = 1
+      renotify_interval    = var.renotify_interval_high
       renotify_occurrences = 3
     }
   }
