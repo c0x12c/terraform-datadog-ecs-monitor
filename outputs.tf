@@ -8,6 +8,11 @@ output "apm_monitor_names" {
   value       = keys(module.apm_monitors)
 }
 
+output "log_monitor_names" {
+  description = "List of created log monitor names"
+  value       = keys(module.log_monitors)
+}
+
 output "enabled_monitors" {
   description = "List of enabled monitor categories"
   value       = var.enabled_monitors

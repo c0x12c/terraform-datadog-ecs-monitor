@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2024-12-12
+
+### Added
+
+- Log monitors for error detection:
+  - `log_error_spike` - High volume of error logs in 15min window (P2)
+  - `log_critical_errors` - Critical error detection for 5xx, fatal, panic (P1)
+  - `log_sustained_errors` - Sustained high error volume over 1 hour (P2)
+- New variables for log monitor thresholds:
+  - `log_error_count_threshold` - Default 50 errors in 15min
+  - `log_critical_error_threshold` - Default 5 errors in 10min
+  - `log_sustained_error_threshold` - Default 100 errors in 1 hour
+
 ## [1.0.0] - 2024-12-12
 
 ### Added

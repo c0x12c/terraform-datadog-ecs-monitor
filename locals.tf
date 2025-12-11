@@ -6,7 +6,7 @@ locals {
   service_filter       = var.ecs_service_name != "*" ? ",servicename:${var.ecs_service_name}" : ""
   recovery_ratio       = var.recovery_threshold_ratio
 
-  # ECS Service Monitors
+  # Service Monitors
   default_service_monitors = {
     service_cpu_high = {
       enabled        = true
@@ -129,6 +129,68 @@ locals {
       threshold_critical   = 1
       renotify_interval    = var.renotify_interval_high
       renotify_occurrences = 3
+    }
+  }
+
+  # Log Monitors
+  default_log_monitors = {
+    log_error_spike = {
+      enabled        = true
+      priority_level = 2
+      type           = "log alert"
+      title_tags     = "[Error Spike] [Logs] [${local.service_display_name}]"
+      title          = "High volume of error logs detected"
+
+      query_template = "logs(\"service:${local.apm_service} status:error\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
+      query_args = {
+        timeframe = "15m"
+      }
+
+      threshold_critical          = var.log_error_count_threshold
+      threshold_critical_recovery = var.log_error_count_threshold * local.recovery_ratio
+      threshold_warning           = var.log_error_count_threshold * 0.5
+      threshold_warning_recovery  = var.log_error_count_threshold * 0.4
+      renotify_interval           = var.renotify_interval_high
+      renotify_occurrences        = 3
+      require_full_window         = true
+    }
+
+    log_critical_errors = {
+      enabled        = true
+      priority_level = 1
+      type           = "log alert"
+      title_tags     = "[Critical Errors] [Logs] [${local.service_display_name}]"
+      title          = "Critical error logs detected (5xx/fatal/panic)"
+
+      query_template = "logs(\"service:${local.apm_service} (status:critical OR status:emergency OR @http.status_code:[500 TO 599] OR @level:fatal OR @level:panic)\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
+      query_args = {
+        timeframe = "10m"
+      }
+
+      threshold_critical          = var.log_critical_error_threshold
+      threshold_critical_recovery = 0
+      renotify_interval           = var.renotify_interval_critical
+      renotify_occurrences        = 5
+      require_full_window         = false
+    }
+
+    log_sustained_errors = {
+      enabled        = true
+      priority_level = 2
+      type           = "log alert"
+      title_tags     = "[Sustained Errors] [Logs] [${local.service_display_name}]"
+      title          = "Sustained high error volume over extended period"
+
+      query_template = "logs(\"service:${local.apm_service} status:error\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
+      query_args = {
+        timeframe = "1h"
+      }
+
+      threshold_critical          = var.log_sustained_error_threshold
+      threshold_critical_recovery = var.log_sustained_error_threshold * local.recovery_ratio
+      renotify_interval           = var.renotify_interval_high
+      renotify_occurrences        = 3
+      require_full_window         = true
     }
   }
 

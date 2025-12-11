@@ -36,13 +36,13 @@ variable "tag_slack_channel" {
 }
 
 variable "enabled_monitors" {
-  description = "List of monitor categories to enable: service, apm"
+  description = "List of monitor categories to enable: service, apm, logs"
   type        = list(string)
   default     = ["service", "apm"]
 
   validation {
-    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "apm"], m)])
-    error_message = "Valid monitor categories: service, apm"
+    condition     = alltrue([for m in var.enabled_monitors : contains(["service", "apm", "logs"], m)])
+    error_message = "Valid monitor categories: service, apm, logs"
   }
 }
 
@@ -165,6 +165,39 @@ variable "error_count_threshold" {
   description = "Error count critical threshold (absolute number)"
   type        = number
   default     = 10
+}
+
+variable "log_error_count_threshold" {
+  description = "Log error count threshold for spike detection (absolute number in 15min window)"
+  type        = number
+  default     = 50
+
+  validation {
+    condition     = var.log_error_count_threshold > 0
+    error_message = "Log error count threshold must be positive"
+  }
+}
+
+variable "log_critical_error_threshold" {
+  description = "Critical error count threshold (5xx, fatal, panic) in 10min window"
+  type        = number
+  default     = 5
+
+  validation {
+    condition     = var.log_critical_error_threshold >= 0
+    error_message = "Log critical error threshold must be non-negative"
+  }
+}
+
+variable "log_sustained_error_threshold" {
+  description = "Sustained error count threshold over 1 hour window"
+  type        = number
+  default     = 100
+
+  validation {
+    condition     = var.log_sustained_error_threshold > 0
+    error_message = "Log sustained error threshold must be positive"
+  }
 }
 
 # Renotification Configuration
