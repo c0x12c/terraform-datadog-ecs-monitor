@@ -141,7 +141,7 @@ locals {
       title_tags     = "[Error Spike] [Logs] [${local.service_display_name}]"
       title          = "High volume of error logs detected"
 
-      query_template = "logs(\"service:${local.apm_service} status:error\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
+      query_template = "logs(\"service:${local.apm_service} status:error env:${var.environment}\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
       query_args = {
         timeframe = "15m"
       }
@@ -162,7 +162,7 @@ locals {
       title_tags     = "[Critical Errors] [Logs] [${local.service_display_name}]"
       title          = "Critical error logs detected (5xx/fatal/panic)"
 
-      query_template = "logs(\"service:${local.apm_service} (status:critical OR status:emergency OR @http.status_code:[500 TO 599] OR @level:fatal OR @level:panic)\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
+      query_template = "logs(\"service:${local.apm_service} (status:critical OR status:emergency OR @http.status_code:[500 TO 599] OR @level:fatal OR @level:panic) env:${var.environment}\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
       query_args = {
         timeframe = "10m"
       }
@@ -181,7 +181,7 @@ locals {
       title_tags     = "[Sustained Errors] [Logs] [${local.service_display_name}]"
       title          = "Sustained high error volume over extended period"
 
-      query_template = "logs(\"service:${local.apm_service} status:error\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
+      query_template = "logs(\"service:${local.apm_service} status:error env:${var.environment}\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
       query_args = {
         timeframe = "1h"
       }
