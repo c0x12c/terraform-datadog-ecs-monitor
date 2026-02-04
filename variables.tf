@@ -35,6 +35,17 @@ variable "tag_slack_channel" {
   default     = true
 }
 
+variable "escalate_min_priority" {
+  description = "Minimum priority level for escalating to @channel in Slack. Only monitors with priority_level <= this value will tag @channel. P1=1 (Critical), P2=2 (High), P3=3 (Medium). Set to 0 to escalate all priorities, or 2 to skip escalating P3 issues"
+  type        = number
+  default     = 0
+
+  validation {
+    condition     = var.escalate_min_priority >= 0 && var.escalate_min_priority <= 3
+    error_message = "Minimum priority level must be between 0 (escalate all) and 3 (P3 only)"
+  }
+}
+
 variable "enabled_monitors" {
   description = "List of monitor categories to enable: service, apm, logs"
   type        = list(string)

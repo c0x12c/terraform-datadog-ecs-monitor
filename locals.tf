@@ -6,13 +6,21 @@ locals {
   service_filter       = var.ecs_service_name != "*" ? ",servicename:${var.ecs_service_name}" : ""
   recovery_ratio       = var.recovery_threshold_ratio
 
+  # Notification message generation based on priority level and minimum threshold
+  notifiers = "@slack-${var.notification_slack_channel_prefix}${var.environment}"
+  notification_message = {
+    for priority in [1, 2, 3] :
+    priority => format("%s%s", local.notifiers, var.tag_slack_channel && (var.escalate_min_priority == 0 || priority <= var.escalate_min_priority) ? " <!channel>" : "")
+  }
+
   # Service Monitors
   default_service_monitors = {
     service_cpu_high = {
-      enabled        = true
-      priority_level = 2
-      title_tags     = "[High CPU] [ECS Service] [${local.service_display_name}]"
-      title          = "CPU utilization is high"
+      enabled                  = true
+      priority_level           = 2
+      title_tags               = "[High CPU] [ECS Service] [${local.service_display_name}]"
+      title                    = "CPU utilization is high"
+      override_default_message = local.notification_message[2]
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.cpuutilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -28,10 +36,11 @@ locals {
     }
 
     service_cpu_critical = {
-      enabled        = true
-      priority_level = 1
-      title_tags     = "[Critical CPU] [ECS Service] [${local.service_display_name}]"
-      title          = "CPU utilization is critical"
+      enabled                  = true
+      priority_level           = 1
+      title_tags               = "[Critical CPU] [ECS Service] [${local.service_display_name}]"
+      title                    = "CPU utilization is critical"
+      override_default_message = local.notification_message[1]
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.cpuutilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -45,10 +54,11 @@ locals {
     }
 
     service_memory_high = {
-      enabled        = true
-      priority_level = 2
-      title_tags     = "[High Memory] [ECS Service] [${local.service_display_name}]"
-      title          = "Memory utilization is high"
+      enabled                  = true
+      priority_level           = 2
+      title_tags               = "[High Memory] [ECS Service] [${local.service_display_name}]"
+      title                    = "Memory utilization is high"
+      override_default_message = local.notification_message[2]
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.memory_utilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -64,10 +74,11 @@ locals {
     }
 
     service_memory_critical = {
-      enabled        = true
-      priority_level = 1
-      title_tags     = "[Critical Memory] [ECS Service] [${local.service_display_name}]"
-      title          = "Memory utilization is critical - OOM risk"
+      enabled                  = true
+      priority_level           = 1
+      title_tags               = "[Critical Memory] [ECS Service] [${local.service_display_name}]"
+      title                    = "Memory utilization is critical - OOM risk"
+      override_default_message = local.notification_message[1]
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.memory_utilization{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -81,10 +92,11 @@ locals {
     }
 
     service_running_tasks_low = {
-      enabled        = true
-      priority_level = 1
-      title_tags     = "[Low Running Tasks] [ECS Service] [${local.service_display_name}]"
-      title          = "Fewer running tasks than desired"
+      enabled                  = true
+      priority_level           = 1
+      title_tags               = "[Low Running Tasks] [ECS Service] [${local.service_display_name}]"
+      title                    = "Fewer running tasks than desired"
+      override_default_message = local.notification_message[1]
 
       query_template = "avg($${timeframe}):avg:aws.ecs.service.running{${local.ecs_filter}${local.service_filter}} by {servicename} - avg:aws.ecs.service.desired{${local.ecs_filter}${local.service_filter}} by {servicename} < $${threshold_critical}"
       query_args = {
@@ -99,10 +111,11 @@ locals {
     }
 
     service_task_count_zero = {
-      enabled        = true
-      priority_level = 1
-      title_tags     = "[Service Down] [ECS Service] [${local.service_display_name}]"
-      title          = "ECS Service has no running tasks"
+      enabled                  = true
+      priority_level           = 1
+      title_tags               = "[Service Down] [ECS Service] [${local.service_display_name}]"
+      title                    = "ECS Service has no running tasks"
+      override_default_message = local.notification_message[1]
 
       query_template = "max($${timeframe}):sum:aws.ecs.service.running{${local.ecs_filter}${local.service_filter}} by {servicename} <= $${threshold_critical}"
       query_args = {
@@ -116,10 +129,11 @@ locals {
     }
 
     service_pending_tasks_stuck = {
-      enabled        = true
-      priority_level = 2
-      title_tags     = "[Pending Tasks] [ECS Service] [${local.service_display_name}]"
-      title          = "ECS Service has tasks stuck in pending state"
+      enabled                  = true
+      priority_level           = 2
+      title_tags               = "[Pending Tasks] [ECS Service] [${local.service_display_name}]"
+      title                    = "ECS Service has tasks stuck in pending state"
+      override_default_message = local.notification_message[2]
 
       query_template = "min($${timeframe}):sum:aws.ecs.service.pending{${local.ecs_filter}${local.service_filter}} by {servicename} > $${threshold_critical}"
       query_args = {
@@ -135,11 +149,12 @@ locals {
   # Log Monitors
   default_log_monitors = {
     log_error_spike = {
-      enabled        = true
-      priority_level = 2
-      type           = "log alert"
-      title_tags     = "[Error Spike] [Logs] [${local.service_display_name}]"
-      title          = "High volume of error logs detected"
+      enabled                  = true
+      priority_level           = 2
+      type                     = "log alert"
+      title_tags               = "[Error Spike] [Logs] [${local.service_display_name}]"
+      title                    = "High volume of error logs detected"
+      override_default_message = local.notification_message[2]
 
       query_template = "logs(\"service:${local.apm_service} status:error env:${var.environment}\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
       query_args = {
@@ -156,11 +171,12 @@ locals {
     }
 
     log_critical_errors = {
-      enabled        = true
-      priority_level = 1
-      type           = "log alert"
-      title_tags     = "[Critical Errors] [Logs] [${local.service_display_name}]"
-      title          = "Critical error logs detected (5xx/fatal/panic)"
+      enabled                  = true
+      priority_level           = 1
+      type                     = "log alert"
+      title_tags               = "[Critical Errors] [Logs] [${local.service_display_name}]"
+      title                    = "Critical error logs detected (5xx/fatal/panic)"
+      override_default_message = local.notification_message[1]
 
       query_template = "logs(\"service:${local.apm_service} (status:critical OR status:emergency OR @http.status_code:[500 TO 599] OR @level:fatal OR @level:panic) env:${var.environment}\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
       query_args = {
@@ -175,11 +191,12 @@ locals {
     }
 
     log_sustained_errors = {
-      enabled        = true
-      priority_level = 2
-      type           = "log alert"
-      title_tags     = "[Sustained Errors] [Logs] [${local.service_display_name}]"
-      title          = "Sustained high error volume over extended period"
+      enabled                  = true
+      priority_level           = 2
+      type                     = "log alert"
+      title_tags               = "[Sustained Errors] [Logs] [${local.service_display_name}]"
+      title                    = "Sustained high error volume over extended period"
+      override_default_message = local.notification_message[2]
 
       query_template = "logs(\"service:${local.apm_service} status:error env:${var.environment}\").index(\"*\").rollup(\"count\").last(\"$${timeframe}\") > $${threshold_critical}"
       query_args = {
@@ -197,10 +214,11 @@ locals {
   # APM Monitors
   default_apm_monitors = {
     apm_p95_latency = {
-      enabled        = true
-      priority_level = 3
-      title_tags     = "[High P95 Latency] [APM] [${local.apm_service}]"
-      title          = "Service ${local.apm_service} P95 latency is high"
+      enabled                  = true
+      priority_level           = 3
+      title_tags               = "[High P95 Latency] [APM] [${local.apm_service}]"
+      title                    = "Service ${local.apm_service} P95 latency is high"
+      override_default_message = local.notification_message[3]
 
       query_template = "percentile($${timeframe}):p95:$${metric}{env:${var.environment},service:${local.apm_service}} > $${threshold_critical}"
       query_args = {
@@ -215,10 +233,11 @@ locals {
     }
 
     apm_p99_latency = {
-      enabled        = true
-      priority_level = 2
-      title_tags     = "[High P99 Latency] [APM] [${local.apm_service}]"
-      title          = "Service ${local.apm_service} P99 latency is high"
+      enabled                  = true
+      priority_level           = 2
+      title_tags               = "[High P99 Latency] [APM] [${local.apm_service}]"
+      title                    = "Service ${local.apm_service} P99 latency is high"
+      override_default_message = local.notification_message[2]
 
       query_template = "percentile($${timeframe}):p99:$${metric}{env:${var.environment},service:${local.apm_service}} > $${threshold_critical}"
       query_args = {
@@ -233,10 +252,11 @@ locals {
     }
 
     apm_error_rate = {
-      enabled        = true
-      priority_level = 2
-      title_tags     = "[High Error Rate] [APM] [${local.apm_service}]"
-      title          = "Service ${local.apm_service} error rate is high"
+      enabled                  = true
+      priority_level           = 2
+      title_tags               = "[High Error Rate] [APM] [${local.apm_service}]"
+      title                    = "Service ${local.apm_service} error rate is high"
+      override_default_message = local.notification_message[2]
 
       query_template = "sum($${timeframe}):(sum:$${metric}.errors{env:${var.environment},service:${local.apm_service}}.as_count() / sum:$${metric}.hits{env:${var.environment},service:${local.apm_service}}.as_count()) * 100 > $${threshold_critical}"
       query_args = {
@@ -252,10 +272,11 @@ locals {
     }
 
     apm_error_count = {
-      enabled        = true
-      priority_level = 2
-      title_tags     = "[Error Spike] [APM] [${local.apm_service}]"
-      title          = "Service ${local.apm_service} error count is high"
+      enabled                  = true
+      priority_level           = 2
+      title_tags               = "[Error Spike] [APM] [${local.apm_service}]"
+      title                    = "Service ${local.apm_service} error count is high"
+      override_default_message = local.notification_message[2]
 
       query_template = "sum($${timeframe}):sum:$${metric}.errors{env:${var.environment},service:${local.apm_service}}.as_count() > $${threshold_critical}"
       query_args = {
@@ -270,10 +291,11 @@ locals {
     }
 
     apm_throughput_drop = {
-      enabled        = true
-      priority_level = 3
-      title_tags     = "[Throughput Drop] [APM] [${local.apm_service}]"
-      title          = "Service ${local.apm_service} request throughput dropped significantly"
+      enabled                  = true
+      priority_level           = 3
+      title_tags               = "[Throughput Drop] [APM] [${local.apm_service}]"
+      title                    = "Service ${local.apm_service} request throughput dropped significantly"
+      override_default_message = local.notification_message[3]
 
       query_template = "change(sum($${timeframe}),last_1h):sum:$${metric}.hits{env:${var.environment},service:${local.apm_service}}.as_count() < $${threshold_critical}"
       query_args = {
