@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-04
+
+### Added
+
+- `escalate_min_priority` variable to control minimum priority level for @channel escalation
+  - Set to `0` (default) to escalate all priority levels
+  - Set to `2` to only escalate P1 (Critical) and P2 (High) alerts, skipping P3 (Medium) alerts like throughput drops
+  - Works in combination with `tag_slack_channel` boolean flag
+  - Provides granular control over Slack channel notifications per monitor priority
+
 ## [1.0.2] - 2026-01-18
 
 ### Changed

@@ -118,6 +118,33 @@ module "ecs_monitors" {
 }
 ```
 
+### Selective Channel Tagging by Priority
+
+Control which severity levels trigger @channel tags in Slack notifications:
+
+```hcl
+module "ecs_monitors" {
+  source  = "c0x12c/ecs-monitor/datadog"
+  version = "~> 1.0.0"
+
+  aws_account_id   = "123456789012"
+  environment      = "prod"
+  ecs_cluster_name = "my-cluster"
+  ecs_service_name = "my-service"
+
+  notification_slack_channel_prefix = "alerts-"
+  tag_slack_channel                 = true
+  escalate_min_priority          = 2  # Only tag @channel for P1 and P2, not P3
+
+  enabled_monitors = ["service", "apm"]
+}
+```
+
+This configuration will:
+- Tag @channel for P1 (Critical) and P2 (High) alerts
+- Skip @channel tagging for P3 (Medium) alerts like `apm_throughput_drop` and `apm_p95_latency`
+- Still send notifications to the Slack channel for all alerts
+
 ### Override Specific Monitors
 
 ```hcl
@@ -233,9 +260,9 @@ No resources.
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name (e.g., dev, staging, prod) | `string` | n/a | yes |
 | <a name="input_error_count_threshold"></a> [error\_count\_threshold](#input\_error\_count\_threshold) | Error count critical threshold (absolute number) | `number` | `10` | no |
 | <a name="input_error_rate_threshold"></a> [error\_rate\_threshold](#input\_error\_rate\_threshold) | Error rate critical threshold percentage | `number` | `1` | no |
+| <a name="input_escalate_min_priority"></a> [escalate\_min\_priority](#input\_escalate\_min\_priority) | Minimum priority level for escalating to @channel in Slack. Only monitors with priority\_level <= this value will tag @channel. P1=1 (Critical), P2=2 (High), P3=3 (Medium). Set to 0 to escalate all priorities, or 2 to skip escalating P3 issues | `number` | `0` | no |
 | <a name="input_log_critical_error_threshold"></a> [log\_critical\_error\_threshold](#input\_log\_critical\_error\_threshold) | Critical error count threshold (5xx, fatal, panic) in 10min window | `number` | `5` | no |
-| <a name="input_log_error_change_threshold"></a> [log\_error\_change\_threshold](#input\_log\_error\_change\_threshold) | Log error change threshold - triggers when error count increases by this percentage compared to previous period | `number` | `100` | no |
-| <a name="input_log_error_percentage_threshold"></a> [log\_error\_percentage\_threshold](#input\_log\_error\_percentage\_threshold) | Error log percentage threshold relative to total logs (0-100) | `number` | `5` | no |
+| <a name="input_log_error_count_threshold"></a> [log\_error\_count\_threshold](#input\_log\_error\_count\_threshold) | Log error count threshold for spike detection (absolute number in 15min window) | `number` | `50` | no |
 | <a name="input_log_sustained_error_threshold"></a> [log\_sustained\_error\_threshold](#input\_log\_sustained\_error\_threshold) | Sustained error count threshold over 1 hour window | `number` | `100` | no |
 | <a name="input_memory_critical_max_threshold"></a> [memory\_critical\_max\_threshold](#input\_memory\_critical\_max\_threshold) | Maximum memory threshold percentage for critical alerts (service\_memory\_critical monitor) | `number` | `95` | no |
 | <a name="input_memory_critical_threshold"></a> [memory\_critical\_threshold](#input\_memory\_critical\_threshold) | Memory utilization critical threshold percentage for high alerts | `number` | `80` | no |
@@ -258,5 +285,6 @@ No resources.
 | <a name="output_ecs_cluster_name"></a> [ecs\_cluster\_name](#output\_ecs\_cluster\_name) | ECS cluster name being monitored |
 | <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | ECS service name being monitored |
 | <a name="output_enabled_monitors"></a> [enabled\_monitors](#output\_enabled\_monitors) | List of enabled monitor categories |
+| <a name="output_log_monitor_names"></a> [log\_monitor\_names](#output\_log\_monitor\_names) | List of created log monitor names |
 | <a name="output_service_monitor_names"></a> [service\_monitor\_names](#output\_service\_monitor\_names) | List of created service monitor names |
 <!-- END_TF_DOCS -->
