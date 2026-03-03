@@ -23,22 +23,22 @@ jobs:
         with:
           github-token: "${{ steps.github-app-token.outputs.token }}"
 
-      - name: Enable auto-merge for GitHub Actions updates
+      - name: Merge GitHub Actions updates
         if: |
           steps.metadata.outputs.package-ecosystem == 'github_actions' &&
           (steps.metadata.outputs.update-type == 'version-update:semver-major' ||
            steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
            steps.metadata.outputs.update-type == 'version-update:semver-patch')
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: gh pr merge --admin --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ steps.github-app-token.outputs.token }}
 
-      - name: Enable auto-merge for Terraform patch updates
+      - name: Merge Terraform patch updates
         if: |
           steps.metadata.outputs.package-ecosystem == 'terraform' &&
           steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: gh pr merge --admin --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ steps.github-app-token.outputs.token }}
