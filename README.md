@@ -1,3 +1,5 @@
+> **ARCHIVED — read-only mirror.** This module is developed in [`c0x12c/terraform-modules`](https://github.com/c0x12c/terraform-modules) and published to `terraform.c0x12c.com`. This repository is a frozen mirror that only backs legacy `registry.terraform.io/c0x12c/<name>/<provider>` versions. Do not open issues or PRs here.
+
 # Terraform Datadog ECS Monitor
 
 Terraform module for creating comprehensive Datadog monitors for AWS ECS services. This module provides pre-configured monitors for ECS service health, task performance, cluster capacity (EC2 launch type), and APM/trace metrics.
